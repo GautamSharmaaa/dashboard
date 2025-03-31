@@ -814,6 +814,8 @@
                                     </div>
                                     </div>
                                     </div>
+                                    </div>
+                                    </div>
 
                                     <!-- AI Modal -->
                                     <div id="ai-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
@@ -861,3 +863,664 @@
                                     legend: {
                                     position: 'right',
                                     labels: {
+                                        color: '#D1D5DB',
+                                        font: {
+                                            size: 12
+                                        }
+                                    }
+                                    }
+                                    }
+                                    }
+                                    });
+
+                                    // Weekly attendance chart
+                                    const attendanceCtx = document.getElementById('attendanceChart').getContext('2d');
+                                    const attendanceChart = new Chart(attendanceCtx, {
+                                        type: 'line',
+                                        data: {
+                                            labels: ['Week 7', 'Week 8', 'Week 9', 'Week 10', 'Week 11', 'Week 12'],
+                                            datasets: [{
+                                                label: 'Attendance Rate',
+                                                data: [84, 89, 86, 91, 88, 93],
+                                                borderColor: '#3B82F6',
+                                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                                tension: 0.3,
+                                                fill: true
+                                            }]
+                                        },
+                                        options: {
+                                            responsive: true,
+                                            maintainAspectRatio: false,
+                                            scales: {
+                                                y: {
+                                                    beginAtZero: false,
+                                                    min: 70,
+                                                    max: 100,
+                                                    grid: {
+                                                        color: 'rgba(75, 85, 99, 0.2)'
+                                                    },
+                                                    ticks: {
+                                                        color: '#9CA3AF'
+                                                    }
+                                                },
+                                                x: {
+                                                    grid: {
+                                                        color: 'rgba(75, 85, 99, 0.2)'
+                                                    },
+                                                    ticks: {
+                                                        color: '#9CA3AF'
+                                                    }
+                                                }
+                                            },
+                                            plugins: {
+                                                legend: {
+                                                    display: false
+                                                }
+                                            }
+                                        }
+                                    });
+
+                                    // Content engagement heatmap
+                                    const engagementCtx = document.getElementById('engagementHeatmap').getContext('2d');
+                                    const engagementData = {
+                                        labels: ['Lecture Videos', 'Reading Materials', 'Homework', 'Discussion Forums', 'Practice Exercises'],
+                                        datasets: [{
+                                            label: 'Week 7',
+                                            data: [65, 78, 90, 55, 72]
+                                        }, {
+                                            label: 'Week 8',
+                                            data: [70, 82, 88, 60, 75]
+                                        }, {
+                                            label: 'Week 9',
+                                            data: [68, 80, 85, 62, 70]
+                                        }, {
+                                            label: 'Week 10',
+                                            data: [75, 85, 92, 70, 78]
+                                        }, {
+                                            label: 'Week 11',
+                                            data: [80, 88, 95, 75, 82]
+                                        }]
+                                    };
+
+                                    const engagementChart = new Chart(engagementCtx, {
+                                        type: 'bar',
+                                        data: {
+                                            labels: engagementData.labels,
+                                            datasets: engagementData.datasets.map((dataset, index) => {
+                                                const colors = ['#3B82F6', '#8B5CF6', '#10B981', '#F59E0B', '#EC4899'];
+                                                return {
+                                                    label: dataset.label,
+                                                    data: dataset.data,
+                                                    backgroundColor: colors[index % colors.length],
+                                                    barPercentage: 0.7,
+                                                    categoryPercentage: 0.8
+                                                };
+                                            })
+                                        },
+                                        options: {
+                                            responsive: true,
+                                            maintainAspectRatio: false,
+                                            scales: {
+                                                y: {
+                                                    beginAtZero: true,
+                                                    max: 100,
+                                                    grid: {
+                                                        color: 'rgba(75, 85, 99, 0.2)'
+                                                    },
+                                                    ticks: {
+                                                        color: '#9CA3AF'
+                                                    }
+                                                },
+                                                x: {
+                                                    grid: {
+                                                        color: 'rgba(75, 85, 99, 0.2)'
+                                                    },
+                                                    ticks: {
+                                                        color: '#9CA3AF'
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    });
+
+                                    // Mastery prediction chart
+                                    const masteryCtx = document.getElementById('masteryPrediction').getContext('2d');
+                                    const masteryChart = new Chart(masteryCtx, {
+                                        type: 'radar',
+                                        data: {
+                                            labels: ['Neural Networks', 'Data Preprocessing', 'Model Training', 'Evaluation Methods', 'AI Ethics'],
+                                            datasets: [{
+                                                label: 'Current Mastery',
+                                                data: [76, 92, 68, 83, 70],
+                                                backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                                                borderColor: '#3B82F6',
+                                                pointBackgroundColor: '#3B82F6',
+                                                pointHoverBackgroundColor: '#fff',
+                                                pointHoverBorderColor: '#3B82F6'
+                                            },
+                                            {
+                                                label: 'Predicted End of Term',
+                                                data: [88, 95, 85, 92, 82],
+                                                backgroundColor: 'rgba(139, 92, 246, 0.2)',
+                                                borderColor: '#8B5CF6',
+                                                pointBackgroundColor: '#8B5CF6',
+                                                pointHoverBackgroundColor: '#fff',
+                                                pointHoverBorderColor: '#8B5CF6'
+                                            }]
+                                        },
+                                        options: {
+                                            responsive: true,
+                                            maintainAspectRatio: false,
+                                            scales: {
+                                                r: {
+                                                    min: 40,
+                                                    max: 100,
+                                                    ticks: {
+                                                        color: '#9CA3AF',
+                                                        backdropColor: 'transparent'
+                                                    },
+                                                    grid: {
+                                                        color: 'rgba(75, 85, 99, 0.2)'
+                                                    },
+                                                    angleLines: {
+                                                        color: 'rgba(75, 85, 99, 0.2)'
+                                                    },
+                                                    pointLabels: {
+                                                        color: '#D1D5DB'
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    });
+                                });
+
+                                    // Tab switching functionality
+                                    function switchTab(tabName) {
+                                        // Hide all tab contents
+                                        document.querySelectorAll('#tab-content > div').forEach(content => {
+                                            content.classList.add('hidden');
+                                        });
+                                        
+                                        // Show selected tab content
+                                        document.getElementById(`content-${tabName}`).classList.remove('hidden');
+                                        
+                                        // Update tab styling
+                                        document.querySelectorAll('[id^="tab-"]').forEach(tab => {
+                                            tab.classList.remove('tab-active');
+                                            tab.classList.add('text-gray-400');
+                                        });
+                                        
+                                        document.getElementById(`tab-${tabName}`).classList.add('tab-active');
+                                        document.getElementById(`tab-${tabName}`).classList.remove('text-gray-400');
+                                    }
+
+                                    // AI Modal functionality
+                                    function showAIModal(type) {
+                                        const modal = document.getElementById('ai-modal');
+                                        const title = document.getElementById('ai-modal-title');
+                                        const content = document.getElementById('ai-modal-content');
+                                        
+                                        modal.classList.remove('hidden');
+                                        
+                                        // Set title and content based on modal type
+                                        switch(type) {
+                                            case 'risk':
+                                                title.innerText = 'At-Risk Students Identified';
+                                                content.innerHTML = `
+                                                    <div class="bg-gray-700 p-4 rounded-lg">
+                                                        <p class="text-sm mb-4">AI analysis has identified the following students who may need additional support:</p>
+                                                        <div class="space-y-4">
+                                                            <div class="flex items-center p-3 bg-red-900 bg-opacity-20 rounded-lg">
+                                                                <div class="h-10 w-10 rounded-full bg-red-500 flex items-center justify-center text-white font-bold mr-3">SJ</div>
+                                                                <div>
+                                                                    <div class="font-semibold">Sarah Johnson</div>
+                                                                    <div class="text-xs text-gray-400">Score: 62% | Attendance: 60%</div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="flex items-center p-3 bg-yellow-900 bg-opacity-20 rounded-lg">
+                                                                <div class="h-10 w-10 rounded-full bg-yellow-500 flex items-center justify-center text-white font-bold mr-3">RT</div>
+                                                                <div>
+                                                                    <div class="font-semibold">Robert Taylor</div>
+                                                                    <div class="text-xs text-gray-400">Score: 68% | Attendance: 75%</div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="flex items-center p-3 bg-yellow-900 bg-opacity-20 rounded-lg">
+                                                                <div class="h-10 w-10 rounded-full bg-yellow-500 flex items-center justify-center text-white font-bold mr-3">JD</div>
+                                                                <div>
+                                                                    <div class="font-semibold">James Davis</div>
+                                                                    <div class="text-xs text-gray-400">Score: 71% | Attendance: 80%</div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="mt-4">
+                                                        <h3 class="font-bold text-blue-400 mb-2">Recommended Actions</h3>
+                                                        <ul class="list-disc pl-5 space-y-2 text-sm">
+                                                            <li>Schedule individual meetings with these students within the next week</li>
+                                                            <li>Provide additional resources for neural network architecture concepts</li>
+                                                            <li>Consider adjusting the pace for upcoming complex topics</li>
+                                                            <li>Generate targeted practice exercises for these students</li>
+                                                        </ul>
+                                                    </div>
+                                                `;
+                                                break;
+                                            case 'insights':
+                                                title.innerText = 'Lesson Insights Generator';
+                                                content.innerHTML = `
+                                                    <div class="bg-gray-700 p-4 rounded-lg">
+                                                        <p class="text-sm mb-4">Based on recent student performance and engagement data, here are AI-generated insights:</p>
+                                                        <div class="space-y-3">
+                                                            <div class="border-l-4 border-blue-500 pl-3">
+                                                                <h4 class="font-bold text-white">Content Effectiveness</h4>
+                                                                <p class="text-sm text-gray-300">Students are engaging most with interactive lab exercises and least with text-based readings. Consider converting more content to interactive formats.</p>
+                                                            </div>
+                                                            <div class="border-l-4 border-green-500 pl-3">
+                                                                <h4 class="font-bold text-white">Concept Mastery</h4>
+                                                                <p class="text-sm text-gray-300">Data preprocessing concepts show strong understanding (92% mastery). Neural network architecture requires more focus (76% mastery).</p>
+                                                            </div>
+                                                            <div class="border-l-4 border-purple-500 pl-3">
+                                                                <h4 class="font-bold text-white">Pacing Analysis</h4>
+                                                                <p class="text-sm text-gray-300">Current pace is appropriate for 85% of students. Consider additional optional advanced materials for high performers.</p>
+                                                            </div>
+                                                            <div class="border-l-4 border-yellow-500 pl-3">
+                                                                <h4 class="font-bold text-white">Assessment Efficacy</h4>
+                                                                <p class="text-sm text-gray-300">Quizzes are providing reliable assessment data. The last project may need clearer instructions (4 students requested clarification).</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="mt-4">
+                                                        <h3 class="font-bold text-blue-400 mb-2">Suggested Adjustments</h3>
+                                                        <div class="grid grid-cols-2 gap-3">
+                                                            <button class="p-3 bg-gray-700 rounded-lg text-sm text-left hover:bg-gray-600 transition-colors">
+                                                                Generate additional neural network exercises
+                                                            </button>
+                                                            <button class="p-3 bg-gray-700 rounded-lg text-sm text-left hover:bg-gray-600 transition-colors">
+                                                                Convert reading 7.2 to interactive format
+                                                            </button>
+                                                            <button class="p-3 bg-gray-700 rounded-lg text-sm text-left hover:bg-gray-600 transition-colors">
+                                                                Create clarified project instructions
+                                                            </button>
+                                                            <button class="p-3 bg-gray-700 rounded-lg text-sm text-left hover:bg-gray-600 transition-colors">
+                                                                Generate advanced materials for top 15%
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                `;
+                                                break;
+                                            case 'predict':
+                                                title.innerText = 'Performance Prediction';
+                                                content.innerHTML = `
+                                                    <div class="bg-gray-700 p-4 rounded-lg">
+                                                        <p class="text-sm mb-4">AI performance predictions for the remaining term:</p>
+                                                        <canvas id="predictionChart" width="100%" height="250"></canvas>
+                                                    </div>
+                                                    <div class="mt-4 space-y-4">
+                                                        <div>
+                                                            <h3 class="font-bold text-blue-400 mb-2">Key Insights</h3>
+                                                            <ul class="list-disc pl-5 space-y-2 text-sm">
+                                                                <li>Class average expected to improve from 84.6% to 87.2% by term end</li>
+                                                                <li>Students struggling with neural networks likely to improve with planned lab exercises</li>
+                                                                <li>3 students at risk of not meeting minimum course requirements</li>
+                                                                <li>Top performers will likely exceed expectations in final project</li>
+                                                            </ul>
+                                                        </div>
+                                                        <div>
+                                                            <h3 class="font-bold text-green-400 mb-2">Confidence Level</h3>
+                                                            <div class="w-full bg-gray-800 rounded-full h-2.5">
+                                                                <div class="bg-green-500 h-2.5 rounded-full" style="width: 85%"></div>
+                                                            </div>
+                                                            <p class="text-xs text-gray-400 mt-1">85% confidence in these predictions based on historical data patterns</p>
+                                                        </div>
+                                                    </div>
+                                                `;
+                                                // Initialize prediction chart after modal is shown
+                                                setTimeout(() => {
+                                                    const ctx = document.getElementById('predictionChart').getContext('2d');
+                                                    new Chart(ctx, {
+                                                        type: 'line',
+                                                        data: {
+                                                            labels: ['Week 12', 'Week 13', 'Week 14', 'Week 15', 'Final'],
+                                                            datasets: [{
+                                                                label: 'Class Average',
+                                                                data: [84.6, 85.1, 85.8, 86.5, 87.2],
+                                                                borderColor: '#3B82F6',
+                                                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                                                tension: 0.3,
+                                                                fill: true
+                                                            },
+                                                            {
+                                                                label: 'Top 25%',
+                                                                data: [92.3, 92.8, 93.5, 94.1, 94.8],
+                                                                borderColor: '#10B981',
+                                                                backgroundColor: 'transparent',
+                                                                tension: 0.3,
+                                                                borderDash: [5, 5]
+                                                            },
+                                                            {
+                                                                label: 'Bottom 25%',
+                                                                data: [71.2, 72.4, 73.8, 75.1, 76.5],
+                                                                borderColor: '#F59E0B',
+                                                                backgroundColor: 'transparent',
+                                                                tension: 0.3,
+                                                                borderDash: [5, 5]
+                                                            }]
+                                                        },
+                                                        options: {
+                                                            responsive: true,
+                                                            scales: {
+                                                                y: {
+                                                                    beginAtZero: false,
+                                                                    min: 65,
+                                                                    max: 100,
+                                                                    grid: {
+                                                                        color: 'rgba(75, 85, 99, 0.2)'
+                                                                    },
+                                                                    ticks: {
+                                                                        color: '#9CA3AF'
+                                                                    }
+                                                                },
+                                                                x: {
+                                                                    grid: {
+                                                                        color: 'rgba(75, 85, 99, 0.2)'
+                                                                    },
+                                                                    ticks: {
+                                                                        color: '#9CA3AF'
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    });
+                                                }, 100);
+                                                break;
+                                            case 'patterns':
+                                                title.innerText = 'Attendance Pattern Analysis';
+                                                content.innerHTML = `
+                                                    <div class="bg-gray-700 p-4 rounded-lg">
+                                                        <p class="text-sm mb-4">AI analysis of attendance patterns and correlations:</p>
+                                                        <div class="space-y-4">
+                                                            <div>
+                                                                <h4 class="font-bold text-white text-sm">Attendance by Day of Week</h4>
+                                                                <div class="grid grid-cols-5 gap-2 mt-2">
+                                                                    <div class="text-center">
+                                                                        <div class="w-full bg-gray-800 rounded-lg p-2">
+                                                                            <div class="text-xs text-gray-400">Mon</div>
+                                                                            <div class="text-lg font-bold text-blue-400">92%</div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="text-center">
+                                                                        <div class="w-full bg-gray-800 rounded-lg p-2">
+                                                                            <div class="text-xs text-gray-400">Tue</div>
+                                                                            <div class="text-lg font-bold text-blue-400">94%</div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="text-center">
+                                                                        <div class="w-full bg-gray-800 rounded-lg p-2">
+                                                                            <div class="text-xs text-gray-400">Wed</div>
+                                                                            <div class="text-lg font-bold text-blue-400">90%</div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="text-center">
+                                                                        <div class="w-full bg-gray-800 rounded-lg p-2">
+                                                                            <div class="text-xs text-gray-400">Thu</div>
+                                                                            <div class="text-lg font-bold text-yellow-400">85%</div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="text-center">
+                                                                        <div class="w-full bg-gray-800 rounded-lg p-2">
+                                                                            <div class="text-xs text-gray-400">Fri</div>
+                                                                            <div class="text-lg font-bold text-red-400">82%</div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div>
+                                                                <h4 class="font-bold text-white text-sm">Attendance Pattern Insights</h4>
+                                                                <ul class="list-disc pl-5 space-y-1 mt-2 text-sm text-gray-300">
+                                                                    <li>Friday classes have consistently lower attendance (18% absence rate)</li>
+                                                                    <li>Morning sessions (9-11am) have 8% higher attendance than afternoon sessions</li>
+                                                                    <li>Attendance drops 12% on days immediately following assignment deadlines</li>
+                                                                    <li>Lab sessions have 7% higher attendance than lecture-only sessions</li>
+                                                                </ul>
+                                                            </div>
+                                                            <div>
+                                                                <h4 class="font-bold text-white text-sm">Correlation with Performance</h4>
+                                                                <p class="text-sm text-gray-300 mt-1">Strong positive correlation (r=0.78) between attendance and final grades based on historical data.</p>
+                                                                <div class="w-full bg-gray-800 rounded-full h-2.5 mt-2">
+                                                                    <div class="bg-blue-500 h-2.5 rounded-full" style="width: 78%"></div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="mt-4">
+                                                        <h3 class="font-bold text-blue-400 mb-2">Recommended Adjustments</h3>
+                                                        <ul class="list-disc pl-5 space-y-1 text-sm">
+                                                            <li>Consider moving important content away from Friday sessions</li>
+                                                            <li>Schedule more interactive activities for afternoon sessions</li>
+                                                            <li>Avoid scheduling sessions right after major deadlines</li>
+                                                            <li>Consider implementing attendance incentives for low-attendance slots</li>
+                                                        </ul>
+                                                    </div>
+                                                `;
+                                                break;
+                                            case 'content':
+                                                title.innerText = 'AI Content Generator';
+                                                content.innerHTML = `
+                                                    <div class="bg-gray-700 p-4 rounded-lg">
+                                                        <p class="text-sm mb-4">Generate customized content based on class needs and performance data:</p>
+                                                        <div class="space-y-4">
+                                                            <div>
+                                                                <label class="text-sm font-medium text-gray-300 block mb-2">Content Type</label>
+                                                                <select class="w-full bg-gray-800 text-white p-2 rounded-lg border border-gray-600">
+                                                                    <option value="exercise">Practice Exercises</option>
+                                                                    <option value="quiz">Assessment Quiz</option>
+                                                                    <option value="lesson">Lesson Materials</option>
+                                                                    <option value="project">Project Assignment</option>
+                                                                    <option value="review">Review Materials</option>
+                                                                </select>
+                                                            </div>
+                                                            <div>
+                                                                <label class="text-sm font-medium text-gray-300 block mb-2">Target Concept</label>
+                                                                <select class="w-full bg-gray-800 text-white p-2 rounded-lg border border-gray-600">
+                                                                    <option value="neural">Neural Network Architecture</option>
+                                                                    <option value="data">Data Preprocessing</option>
+                                                                    <option value="training">Model Training Techniques</option>
+                                                                    <option value="evaluation">Evaluation Methods</option>
+                                                                    <option value="ethics">AI Ethics</option>
+                                                                </select>
+                                                            </div>
+                                                            <div>
+                                                                <label class="text-sm font-medium text-gray-300 block mb-2">Difficulty Level</label>
+                                                                <div class="flex space-x-2">
+                                                                    <button class="flex-1 py-2 bg-gray-800 rounded-lg border border-gray-600 hover:bg-gray-700">Basic</button>
+                                                                    <button class="flex-1 py-2 bg-blue-600 rounded-lg border border-blue-500 hover:bg-blue-700">Intermediate</button>
+                                                                    <button class="flex-1 py-2 bg-gray-800 rounded-lg border border-gray-600 hover:bg-gray-700">Advanced</button>
+                                                                </div>
+                                                            </div>
+                                                            <div>
+                                                                <label class="text-sm font-medium text-gray-300 block mb-2">Target Students</label>
+                                                                <div class="flex space-x-2">
+                                                                    <button class="flex-1 py-2 bg-gray-800 rounded-lg border border-gray-600 hover:bg-gray-700">All Students</button>
+                                                                    <button class="flex-1 py-2 bg-gray-800 rounded-lg border border-gray-600 hover:bg-gray-700">Struggling</button>
+                                                                    <button class="flex-1 py-2 bg-gray-800 rounded-lg border border-gray-600 hover:bg-gray-700">Advanced</button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="mt-4 flex justify-between">
+                                                        <button class="px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors">
+                                                            Save as Template
+                                                        </button>
+                                                        <button class="px-4 py-2 bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
+                                                            Generate Content
+                                                        </button>
+                                                    </div>
+                                                `;
+                                                break;
+                                        }
+                                    }
+
+                                    function closeAIModal() {
+                                        document.getElementById('ai-modal').classList.add('hidden');
+                                    }
+
+                                    // Course change function
+                                    function changeCourse() {
+                                        const course = document.getElementById('courseSelector').value;
+                                        // In a real app, this would load data for the selected course
+                                        console.log(`Changed to course: ${course}`);
+                                        // For demo purposes, show a notification
+                                        alert(`Course changed to ${document.getElementById('courseSelector').options[document.getElementById('courseSelector').selectedIndex].text}`);
+                                    }
+
+                                    // PDF Report Generation
+                                    function generatePDF() {
+                                        const { jsPDF } = window.jspdf;
+                                        const doc = new jsPDF();
+                                        
+                                        // Add title
+                                        doc.setFontSize(18);
+                                        doc.setTextColor(59, 130, 246); // Blue color
+                                        doc.text("Class Performance Report", 105, 15, null, null, "center");
+                                        
+                                        // Add course info
+                                        doc.setFontSize(12);
+                                        doc.setTextColor(0, 0, 0);
+                                        const courseText = document.getElementById('courseSelector').options[document.getElementById('courseSelector').selectedIndex].text;
+                                        doc.text(`Course: ${courseText}`, 20, 30);
+                                        doc.text("Instructor: Dr. Jane Peterson", 20, 40);
+                                        doc.text("Date Generated: " + new Date().toLocaleDateString(), 20, 50);
+                                        
+                                        // Add performance summary
+                                        doc.setFontSize(14);
+                                        doc.setTextColor(59, 130, 246);
+                                        doc.text("Performance Summary", 20, 70);
+                                        
+                                        doc.setFontSize(10);
+                                        doc.setTextColor(0, 0, 0);
+                                        doc.text("Average Score: 84.6%", 30, 80);
+                                        doc.text("Completion Rate: 92%", 30, 90);
+                                        doc.text("Attendance Rate: 89.2%", 30, 100);
+                                        doc.text("Students at Risk: 3", 30, 110);
+                                        
+                                        // Add student table
+                                        doc.autoTable({
+                                            startY: 130,
+                                            head: [['Student ID', 'Name', 'Overall Score', 'Attendance', 'Engagement']],
+                                            body: [
+                                                ['2023-089', 'Michael Miller', '92%', '100%', 'High (4.3/5)'],
+                                                ['2023-042', 'Sarah Johnson', '62%', '60%', 'Low (2.2/5)'],
+                                                ['2023-115', 'Alex Lee', '85%', '90%', 'Good (3.8/5)'],
+                                                // Add more student data as needed
+                                            ],
+                                            headStyles: {
+                                                fillColor: [59, 130, 246],
+                                                textColor: [255, 255, 255]
+                                            },
+                                            alternateRowStyles: {
+                                                fillColor: [240, 240, 240]
+                                            }
+                                        });
+                                        
+                                        // Add concept mastery section
+                                        const finalY = doc.lastAutoTable.finalY || 130;
+                                        doc.setFontSize(14);
+                                        doc.setTextColor(59, 130, 246);
+                                        doc.text("Concept Mastery", 20, finalY + 20);
+                                        
+                                        doc.setFontSize(10);
+                                        doc.setTextColor(0, 0, 0);
+                                        doc.text("Neural Networks: 76%", 30, finalY + 30);
+                                        doc.text("Data Preprocessing: 92%", 30, finalY + 40);
+                                        doc.text("Model Training: 68%", 30, finalY + 50);
+                                        doc.text("Evaluation Methods: 83%", 30, finalY + 60);
+                                        
+                                        // Save the PDF
+                                        doc.save(`${courseText}_Class_Report.pdf`);
+                                    }
+
+                                    // Attendance Report Generation
+                                    function generateAttendanceReport() {
+                                        const { jsPDF } = window.jspdf;
+                                        const doc = new jsPDF();
+                                        
+                                        // Add title
+                                        doc.setFontSize(18);
+                                        doc.setTextColor(139, 92, 246); // Purple color
+                                        doc.text("Class Attendance Report", 105, 15, null, null, "center");
+                                        
+                                        // Add course info
+                                        doc.setFontSize(12);
+                                        doc.setTextColor(0, 0, 0);
+                                        const courseText = document.getElementById('courseSelector').options[document.getElementById('courseSelector').selectedIndex].text;
+                                        doc.text(`Course: ${courseText}`, 20, 30);
+                                        doc.text("Instructor: Dr. Jane Peterson", 20, 40);
+                                        doc.text("Report Period: Weeks 7-12", 20, 50);
+                                        doc.text("Date Generated: " + new Date().toLocaleDateString(), 20, 60);
+                                        
+                                        // Add attendance summary
+                                        doc.setFontSize(14);
+                                        doc.setTextColor(139, 92, 246);
+                                        doc.text("Attendance Summary", 20, 80);
+                                        
+                                        doc.setFontSize(10);
+                                        doc.setTextColor(0, 0, 0);
+                                        doc.text("Overall Attendance Rate: 89.2%", 30, 90);
+                                        doc.text("Perfect Attendance: 6 students (25%)", 30, 100);
+                                        doc.text("At-Risk Attendance (<70%): 3 students (12.5%)", 30, 110);
+                                        doc.text("Most Missed: Friday sessions (18% absence rate)", 30, 120);
+                                        
+                                        // Add attendance table
+                                        doc.autoTable({
+                                            startY: 140,
+                                            head: [['Week', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Weekly Avg']],
+                                            body: [
+                                                ['Week 7', '92%', '94%', '89%', '85%', '82%', '88.4%'],
+                                                ['Week 8', '90%', '95%', '92%', '87%', '80%', '88.8%'],
+                                                ['Week 9', '94%', '93%', '90%', '84%', '81%', '88.4%'],
+                                                ['Week 10', '91%', '94%', '88%', '86%', '83%', '88.4%'],
+                                                ['Week 11', '93%', '95%', '91%', '85%', '82%', '89.2%'],
+                                                ['Week 12', '92%', '96%', '90%', '87%', '84%', '89.8%'],
+                                            ],
+                                            headStyles: {
+                                                fillColor: [139, 92, 246],
+                                                textColor: [255, 255, 255]
+                                            },
+                                            alternateRowStyles: {
+                                                fillColor: [240, 240, 240]
+                                            }
+                                        });
+                                        
+                                        // Add student attendance concerns
+                                        const finalY = doc.lastAutoTable.finalY || 140;
+                                        doc.setFontSize(14);
+                                        doc.setTextColor(139, 92, 246);
+                                        doc.text("Attendance Concerns", 20, finalY + 20);
+                                        
+                                        doc.autoTable({
+                                            startY: finalY + 30,
+                                            head: [['Student ID', 'Name', 'Attendance Rate', 'Pattern', 'Recommended Action']],
+                                            body: [
+                                                ['2023-042', 'Sarah Johnson', '60%', 'Missing Thursdays & Fridays', 'Schedule 1:1 meeting'],
+                                                ['2023-078', 'Robert Taylor', '68%', 'Frequently late (>15 min)', 'Email reminder'],
+                                                ['2023-103', 'James Davis', '69%', 'Sporadic attendance', 'Attendance contract']
+                                            ],
+                                            headStyles: {
+                                                fillColor: [139, 92, 246],
+                                                textColor: [255, 255, 255]
+                                            }
+                                        });
+                                        
+                                        // Save the PDF
+                                        doc.save(`${courseText}_Attendance_Report.pdf`);
+                                    }
+                                    </script>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
