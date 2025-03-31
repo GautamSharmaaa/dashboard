@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alpha One Labs - Enhanced Educator Dashboard</title>
+    <script src="https://unpkg.com/htmx.org"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        .gradient-text {
+            background: linear-gradient(45deg, #3B82F6, #8B5CF6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .holographic-card {
+            background: linear-gradient(145deg, rgba(59,130,246,0.1), rgba(139,92,246,0.1));
+            border: 1px solid rgba(59,130,246,0.2);
+            backdrop-filter: blur(10px);
+        }
+        .tab-active {
+            border-bottom: 3px solid #3B82F6;
+            color: #3B82F6;
+        }
+        .attendance-indicator {
+            width: 12px;
+            height: 12px;
+            display: inline-block;
+            border-radius: 50%;
+            margin-right: 4px;
+        }
+        .attendance-present {
+            background-color: #10B981;
+        }
+        .attendance-absent {
+            background-color: #EF4444;
+        }
+        .attendance-late {
+            background-color: #F59E0B;
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.25);
+        }
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(139, 92, 246, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(139, 92, 246, 0);
+            }
+        }
+        .notification-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: #EF4444;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+        .data-tooltip {
+            position: relative;
+        }
+        .data-tooltip:hover:after {
+            content: attr(data-tip);
+            position: absolute;
+            background: #1F2937;
+            padding: 8px;
+            border-radius: 4px;
+            color: white;
+            z-index: 10;
+            width: max-content;
+            max-width: 300px;
+            top: 100%;
+            left: 0;
+            margin-top: 5px;
+            font-size: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen">
+    <div class="flex flex-col min-h-screen">
+        <!-- Top Navigation Bar -->
+        <header class="bg-gray-800 p-4 flex justify-between items-center border-b border-gray-700 sticky top-0 z-50">
+            <div class="flex items-center space-x-4">
+                <h1 class="text-2xl font-bold gradient-text">Alpha One Labs</h1>
+                <div class="text-gray-400 flex items-center">
+                    <span class="hidden md:inline">Educator Dashboard</span>
+                    <span class="px-2 py-1 ml-2 bg-blue-900 text-blue-300 text-xs rounded-full">Pro Edition</span>
+                </div>
+            </div>
+            <div class="flex items-center space-x-3">
+                <div class="relative">
+                    <button class="bg-gray-700 p-2 rounded-full hover:bg-gray-600 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
+                        </svg>
+                    </button>
+                    <div class="notification-badge">3</div>
+                </div>
+                <div class="flex space-x-3">
+                    <button onclick="generatePDF()" 
+                            class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition-colors flex items-center">
+                        📄 Generate Class Report
+                    </button>
+                    <button onclick="generateAttendanceReport()" 
+                            class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg transition-colors flex items-center">
+                        📊 Attendance Report
+                    </button>
+                    <div class="relative group">
+                        <button class="bg-gray-700 p-2 rounded-full hover:bg-gray-600 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                        <div class="absolute right-0 mt-2 w-48 bg-gray-800 rounded-lg shadow-lg p-3 hidden group-hover:block z-10">
+                            <div class="text-sm">
+                                <p class="font-semibold text-blue-400">Help & Resources</p>
+                                <ul class="mt-2 space-y-2">
+                                    <li><a href="#" class="hover:text-blue-400">Dashboard Guide</a></li>
+                                    <li><a href="#" class="hover:text-blue-400">Report Templates</a></li>
+                                    <li><a href="#" class="hover:text-blue-400">AI Features Walkthrough</a></li>
+                                    <li><a href="#" class="hover:text-blue-400">Contact Support</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="flex flex-1 overflow-hidden">
+            <!-- Left Sidebar -->
+            <div class="w-64 bg-gray-800 border-r border-gray-700 p-6 space-y-6 hidden md:block">
+                <!-- User Profile -->
+                <div class="flex items-center space-x-3 pb-4 border-b border-gray-700">
+                    <div class="bg-blue-500 rounded-full w-10 h-10 flex items-center justify-center text-white font-bold">
+                        JP
+                    </div>
+                    <div>
+                        <div class="font-bold">Dr. Jane Peterson</div>
+                        <div class="text-sm text-gray-400">Senior Instructor</div>
+                    </div>
+                </div>
+                
+                <!-- Class Statistics -->
+                <div class="holographic-card rounded-xl p-4 card-hover">
+                    <h2 class="text-lg font-bold mb-4 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
+                        </svg>
+                        Class Statistics
+                    </h2>
+                    <div class="space-y-3">
+                        <div class="flex justify-between">
+                            <span>Total Students</span>
+                            <span class="text-blue-400 font-semibold">24</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Avg. Score</span>
+                            <span class="text-green-400 font-semibold">84.6%</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Attendance</span>
+                            <span class="text-purple-400 font-semibold">89.2%</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Completion Rate</span>
+                            <span class="text-yellow-400 font-semibold">92%</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Engagement Index</span>
+                            <span class="text-pink-400 font-semibold">4.2/5</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Quick Actions -->
+                <div class="holographic-card rounded-xl p-4 card-hover">
+                    <h2 class="text-lg font-bold mb-4 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-purple-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd" />
+                        </svg>
+                        AI Assistant
+                    </h2>
+                    <div class="space-y-3">
+                        <button onclick="showAIModal('risk')" class="w-full p-2 bg-gray-700 rounded-lg hover:bg-gray-600 flex items-center text-left transition-colors">
+                            <span class="bg-red-500 p-1 rounded mr-2">🔍</span>
+                            <span>Identify At-Risk Students</span>
+                        </button>
+                        <button onclick="showAIModal('insights')" class="w-full p-2 bg-gray-700 rounded-lg hover:bg-gray-600 flex items-center text-left transition-colors">
+                            <span class="bg-blue-500 p-1 rounded mr-2">💡</span>
+                            <span>Generate Lesson Insights</span>
+                        </button>
+                        <button onclick="showAIModal('predict')" class="pulse-animation w-full p-2 bg-gray-700 rounded-lg hover:bg-gray-600 flex items-center text-left transition-colors">
+                            <span class="bg-green-500 p-1 rounded mr-2">📈</span>
+                            <span>Predict Performance Trends</span>
+                        </button>
+                        <button onclick="showAIModal('patterns')" class="w-full p-2 bg-gray-700 rounded-lg hover:bg-gray-600 flex items-center text-left transition-colors">
+                            <span class="bg-yellow-500 p-1 rounded mr-2">📋</span>
+                            <span>Track Attendance Patterns</span>
+                        </button>
+                        <button onclick="showAIModal('content')" class="w-full p-2 bg-gray-700 rounded-lg hover:bg-gray-600 flex items-center text-left transition-colors">
+                            <span class="bg-purple-500 p-1 rounded mr-2">🧠</span>
+                            <span>AI Content Generator</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Course Selection -->
+                <div class="holographic-card rounded-xl p-4 card-hover">
+                    <h2 class="text-lg font-bold mb-4 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
+                        </svg>
+                        Course Selection
+                    </h2>
+                    <select id="courseSelector" onchange="changeCourse()" class="w-full bg-gray-700 p-2 rounded-lg text-white border border-gray-600">
+                        <option value="ai-fundamentals">AI Fundamentals</option>
+                        <option value="machine-learning">Machine Learning</option>
+                        <option value="data-science">Data Science</option>
+                        <option value="python">Python Programming</option>
+                        <option value="deep-learning">Deep Learning</option>
+                        <option value="nlp">Natural Language Processing</option>
+                    </select>
+                    <div class="mt-4 text-sm text-gray-400">
+                        <div class="flex justify-between mb-1">
+                            <span>Term Progress</span>
+                            <span>75%</span>
+                        </div>
+                        <div class="w-full h-2 bg-gray-700 rounded">
+                            <div class="h-2 bg-green-500 rounded" style="width: 75%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Links -->
+                <div class="space-y-2">
+                    <h2 class="text-sm font-bold text-gray-400 uppercase tracking-wider">Quick Links</h2>
+                    <div class="space-y-1">
+                        <a href="#" class="block px-3 py-2 rounded hover:bg-gray-700 transition-colors">
+                            📅 Academic Calendar
+                        </a>
+                        <a href="#" class="block px-3 py-2 rounded hover:bg-gray-700 transition-colors">
+                            📊 Department Statistics
+                        </a>
+                        <a href="#" class="block px-3 py-2 rounded hover:bg-gray-700 transition-colors">
+                            📚 Course Materials
+                        </a>
+                        <a href="#" class="block px-3 py-2 rounded hover:bg-gray-700 transition-colors">
+                            👥 Faculty Portal
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="flex-1 overflow-auto">
+                <div class="p-6 space-y-6">
+                    <!-- Welcome Banner -->
+                    <div class="bg-gradient-to-r from-blue-900 to-purple-900 rounded-xl p-4 md:p-6 relative overflow-hidden">
+                        <div class="absolute right-0 top-0 w-40 h-40 opacity-20">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+                            <div>
+                                <h1 class="text-2xl font-bold">Welcome, Dr. Peterson!</h1>
+                                <p class="text-blue-200 mt-1">📅 Today is Tuesday, April 1, 2025 | Week 12 of Spring Term</p>
+                                <div class="mt-3 flex space-x-3">
+                                    <span class="px-2 py-1 bg-blue-800 text-blue-200 rounded-full text-xs">3 student alerts</span>
+                                    <span class="px-2 py-1 bg-green-800 text-green-200 rounded-full text-xs">23 assignments graded</span>
+                                </div>
+                            </div>
+                            <div class="mt-4 md:mt-0">
+                                <button class="bg-white text-blue-900 px-4 py-2 rounded-lg hover:bg-blue-100 transition-colors">
+                                    View Today's Schedule
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Performance Metrics -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="holographic-card p-4 rounded-xl card-hover relative">
+                            <div class="absolute right-2 top-2 text-gray-400 cursor-pointer data-tooltip" data-tip="Average score across all assignments, quizzes, and exams">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <div class="text-sm text-gray-400">Average Score</div>
+                            <div class="text-2xl font-bold text-blue-400 mt-1">84.6%</div>
+                            <div class="text-xs text-gray-400 mt-2 flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-400 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd" />
+                                </svg>
+                                <span class="text-green-400">↑ 2.3% from last week</span>
+                            </div>
+                        </div>
+                        <div class="holographic-card p-4 rounded-xl card-hover relative">
+                            <div class="absolute right-2 top-2 text-gray-400 cursor-pointer data-tooltip" data-tip="Percentage of assigned work completed by students">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <div class="text-sm text-gray-400">Completion Rate</div>
+                            <div class="text-2xl font-bold text-green-400 mt-1">92%</div>
+                            <div class="text-xs text-gray-400 mt-2 flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-400 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd" />
+                                </svg>
+                                <span class="text-green-400">↑ 4% from last month</span>
+                            </div>
+                        </div>
+                        <div class="holographic-card p-4 rounded-xl card-hover relative">
+                            <div class="absolute right-2 top-2 text-gray-400 cursor-pointer data-tooltip" data-tip="Students identified by AI as needing additional support">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <div class="text-sm text-gray-400">AI Risk Flags</div>
+                            <div class="text-2xl font-bold text-purple-400 mt-1">3</div>
+                            <div class="text-xs text-gray-400 mt-2 flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-red-400 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M12 13a1 1 0 100 2h5a1 1 0 001-1V9a1 1 0 10-2 0v2.586l-4.293-4.293a1 1 0 00-1.414 0L8 9.586 3.707 5.293a1 1 0 00-1.414 1.414l5 5a1 1 0 001.414 0L11 9.414 14.586 13H12z" clip-rule="evenodd" />
+                                </svg>
+                                <span class="text-red-400">↑ 1 from last week</span>
+                            </div>
+                        </div>
+                        <div class="holographic-card p-4 rounded-xl card-hover relative">
+                            <div class="absolute right-2 top-2 text-gray-400 cursor-pointer data-tooltip" data-tip="AI-calculated score based on participation, questions asked, and forum activity">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <div class="text-sm text-gray-400">Engagement</div>
+                            <div class="text-2xl font-bold text-yellow-400 mt-1">88%</div>
+                            <div class="text-xs text-gray-400 mt-2 flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-yellow-400 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+                                </svg>
+                                <span class="text-yellow-400">No change</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Advanced Metrics Row -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="holographic-card p-4 rounded-xl card-hover">
+                            <h3 class="font-bold text-sm mb-2 text-gray-300">Skill Mastery Distribution</h3>
+                            <div class="flex items-center space-x-2">
+                                <div class="flex-1 space-y-2">
+                                    <div>
+                                        <div class="flex justify-between text-xs">
+                                            <span>Neural Networks</span>
+                                            <span>76%</span>
+                                        </div>
+                                        <div class="w-full h-2 bg-gray-700 rounded">
+                                            <div class="h-2 bg-blue-500 rounded" style="width: 76%"></div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="flex justify-between text-xs">
+                                            <span>Data Preprocessing</span>
+                                            <span>92%</span>
+                                        </div>
+                                        <div class="w-full h-2 bg-gray-700 rounded">
+                                            <div class="h-2 bg-green-500 rounded" style="width: 92%"></div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="flex justify-between text-xs">
+                                            <span>Model Training</span>
+                                            <span>68%</span>
+                                        </div>
+                                        <div class="w-full h-2 bg-gray-700 rounded">
+                                            <div class="h-2 bg-yellow-500 rounded" style="width: 68%"></div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="flex justify-between text-xs">
+                                            <span>Evaluation Methods</span>
+                                            <span>83%</span>
+                                        </div>
+                                        <div class="w-full h-2 bg-gray-700 rounded">
+                                            <div class="h-2 bg-purple-500 rounded" style="width: 83%"></div>
+                                        </div>
+                                    </div>
+                                    </div>
+                                    </div>
+                                    </div>
+
+                                    <div class="holographic-card p-4 rounded-xl card-hover">
+                                    <h3 class="font-bold text-sm mb-2 text-gray-300">Assessment Breakdown</h3>
+                                    <canvas id="assessmentChart" width="100%" height="200"></canvas>
+                                    </div>
+
+                                    <div class="holographic-card p-4 rounded-xl card-hover">
+                                    <h3 class="font-bold text-sm mb-2 text-gray-300">Weekly Attendance</h3>
+                                    <canvas id="attendanceChart" width="100%" height="200"></canvas>
+                                    </div>
+                                    </div>
+
+                                    <!-- Tab Navigation -->
+                                    <div class="border-b border-gray-700 flex space-x-4">
+                                    <button class="px-4 py-2 tab-active" id="tab-students" onclick="switchTab('students')">
+                                    Student Performance
+                                    </button>
+                                    <button class="px-4 py-2 text-gray-400 hover:text-blue-400" id="tab-assignments" onclick="switchTab('assignments')">
+                                    Assignments
+                                    </button>
+                                    <button class="px-4 py-2 text-gray-400 hover:text-blue-400" id="tab-insights" onclick="switchTab('insights')">
+                                    AI Insights
+                                    </button>
+                                    <button class="px-4 py-2 text-gray-400 hover:text-blue-400" id="tab-calendar" onclick="switchTab('calendar')">
+                                    Calendar
+                                    </button>
+                                    </div>
+
+                                    <!-- Tab Content -->
+                                    <div id="tab-content">
+                                    <!-- Student Performance Tab -->
+                                    <div id="content-students" class="space-y-6">
+                                    <!-- Search and Filters -->
+                                    <div class="flex flex-col md:flex-row justify-between space-y-4 md:space-y-0">
+                                    <div class="relative">
+                                    <input type="text" placeholder="Search students..." class="bg-gray-800 text-gray-200 pl-10 pr-4 py-2 rounded-lg border border-gray-700 w-full md:w-80">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 absolute left-3 top-2.5" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                                    </svg>
+                                    </div>
+                                    <div class="flex space-x-3">
+                                    <select class="bg-gray-800 text-gray-200 px-4 py-2 rounded-lg border border-gray-700">
+                                        <option value="all">All Students</option>
+                                        <option value="at-risk">At Risk</option>
+                                        <option value="high-performers">High Performers</option>
+                                        <option value="low-attendance">Low Attendance</option>
+                                    </select>
+                                    <select class="bg-gray-800 text-gray-200 px-4 py-2 rounded-lg border border-gray-700">
+                                        <option value="recent">Recent Activity</option>
+                                        <option value="score-asc">Score (Low to High)</option>
+                                        <option value="score-desc">Score (High to Low)</option>
+                                        <option value="name">Alphabetical</option>
+                                    </select>
+                                    </div>
+                                    </div>
+
+                                    <!-- Student List Table -->
+                                    <div class="overflow-x-auto">
+                                    <table class="min-w-full bg-gray-800 rounded-lg overflow-hidden">
+                                    <thead>
+                                        <tr class="bg-gray-700">
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Student</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Overall</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Attendance</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Last Activity</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Engagement</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Student 1 -->
+                                        <tr class="hover:bg-gray-700">
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="flex items-center">
+                                                    <div class="flex-shrink-0 h-8 w-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">
+                                                        MM
+                                                    </div>
+                                                    <div class="ml-4">
+                                                        <div class="text-sm font-medium text-white">Michael Miller</div>
+                                                        <div class="text-sm text-gray-400">ID: 2023-089</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="flex items-center">
+                                                    <div class="h-8 w-8 rounded-full bg-green-500 flex items-center justify-center text-white font-medium">A</div>
+                                                    <span class="ml-2 text-sm text-white">92%</span>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="flex space-x-1">
+                                                    <span class="attendance-indicator attendance-present"></span>
+                                                    <span class="attendance-indicator attendance-present"></span>
+                                                    <span class="attendance-indicator attendance-present"></span>
+                                                    <span class="attendance-indicator attendance-present"></span>
+                                                    <span class="attendance-indicator attendance-present"></span>
+                                                    <span class="text-sm text-gray-300 ml-1">100%</span>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                                                Today, 9:42 AM
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="w-full bg-gray-700 rounded-full h-2">
+                                                    <div class="bg-blue-500 h-2 rounded-full" style="width: 85%"></div>
+                                                </div>
+                                                <div class="text-xs text-gray-400 mt-1">High (4.3/5)</div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                <button class="text-blue-400 hover:text-blue-300 mr-3">View</button>
+                                                <button class="text-purple-400 hover:text-purple-300">Message</button>
+                                            </td>
+                                        </tr>
+
+                                        <!-- Student 2 (At Risk) -->
+                                        <tr class="hover:bg-gray-700 bg-red-900 bg-opacity-20">
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="flex items-center">
+                                                    <div class="flex-shrink-0 h-8 w-8 bg-red-500 rounded-full flex items-center justify-center text-white font-bold">
+                                                        SJ
+                                                    </div>
+                                                    <div class="ml-4">
+                                                        <div class="text-sm font-medium text-white">Sarah Johnson</div>
+                                                        <div class="text-sm text-gray-400">ID: 2023-042</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="flex items-center">
+                                                    <div class="h-8 w-8 rounded-full bg-red-500 flex items-center justify-center text-white font-medium">D</div>
+                                                    <span class="ml-2 text-sm text-white">62%</span>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="flex space-x-1">
+                                                    <span class="attendance-indicator attendance-present"></span>
+                                                    <span class="attendance-indicator attendance-absent"></span>
+                                                    <span class="attendance-indicator attendance-late"></span>
+                                                    <span class="attendance-indicator attendance-absent"></span>
+                                                    <span class="attendance-indicator attendance-present"></span>
+                                                    <span class="text-sm text-gray-300 ml-1">60%</span>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                                                3 days ago
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="w-full bg-gray-700 rounded-full h-2">
+                                                    <div class="bg-red-500 h-2 rounded-full" style="width: 45%"></div>
+                                                </div>
+                                                <div class="text-xs text-gray-400 mt-1">Low (2.2/5)</div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                <button class="text-blue-400 hover:text-blue-300 mr-3">View</button>
+                                                <button class="text-red-400 hover:text-red-300 font-bold">Intervention</button>
+                                            </td>
+                                        </tr>
+
+                                        <!-- Add more student rows here -->
+                                        <!-- Student 3 -->
+                                        <tr class="hover:bg-gray-700">
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="flex items-center">
+                                                    <div class="flex-shrink-0 h-8 w-8 bg-purple-500 rounded-full flex items-center justify-center text-white font-bold">
+                                                        AL
+                                                    </div>
+                                                    <div class="ml-4">
+                                                        <div class="text-sm font-medium text-white">Alex Lee</div>
+                                                        <div class="text-sm text-gray-400">ID: 2023-115</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="flex items-center">
+                                                    <div class="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-medium">B</div>
+                                                    <span class="ml-2 text-sm text-white">85%</span>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="flex space-x-1">
+                                                    <span class="attendance-indicator attendance-present"></span>
+                                                    <span class="attendance-indicator attendance-present"></span>
+                                                    <span class="attendance-indicator attendance-late"></span>
+                                                    <span class="attendance-indicator attendance-present"></span>
+                                                    <span class="attendance-indicator attendance-present"></span>
+                                                    <span class="text-sm text-gray-300 ml-1">90%</span>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                                                Yesterday, 3:15 PM
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="w-full bg-gray-700 rounded-full h-2">
+                                                    <div class="bg-green-500 h-2 rounded-full" style="width: 75%"></div>
+                                                </div>
+                                                <div class="text-xs text-gray-400 mt-1">Good (3.8/5)</div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                <button class="text-blue-400 hover:text-blue-300 mr-3">View</button>
+                                                <button class="text-purple-400 hover:text-purple-300">Message</button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                    </table>
+                                    </div>
+                                    </div>
+
+                                    <!-- Assignments Tab (Hidden initially) -->
+                                    <div id="content-assignments" class="hidden space-y-6">
+                                    <div class="flex justify-between items-center">
+                                    <h2 class="text-xl font-bold">Assignments & Assessments</h2>
+                                    <button class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition-colors flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                                    </svg>
+                                    Create Assignment
+                                    </button>
+                                    </div>
+
+                                    <!-- Assignments Table -->
+                                    <div class="overflow-x-auto">
+                                    <table class="min-w-full bg-gray-800 rounded-lg overflow-hidden">
+                                    <thead>
+                                        <tr class="bg-gray-700">
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Assignment</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Type</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Due Date</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Status</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Avg. Score</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Completion</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Assignment 1 -->
+                                        <tr class="hover:bg-gray-700">
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="text-sm font-medium text-white">Neural Network Architecture</div>
+                                                <div class="text-xs text-gray-400">Project Assignment</div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                                                <span class="px-2 py-1 bg-purple-900 text-purple-200 rounded-full text-xs">Project</span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                                                April 15, 2025
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span class="px-2 py-1 bg-yellow-900 text-yellow-200 rounded-full text-xs">In Progress</span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                                                N/A
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="w-full bg-gray-700 rounded-full h-2">
+                                                    <div class="bg-blue-500 h-2 rounded-full" style="width: 0%"></div>
+                                                </div>
+                                                <div class="text-xs text-gray-400 mt-1">0% Submitted</div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                <button class="text-blue-400 hover:text-blue-300 mr-3">Edit</button>
+                                                <button class="text-gray-400 hover:text-gray-300">Details</button>
+                                            </td>
+                                        </tr>
+
+                                        <!-- Assignment 2 -->
+                                        <tr class="hover:bg-gray-700">
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="text-sm font-medium text-white">Data Preprocessing Methods</div>
+                                                <div class="text-xs text-gray-400">Weekly Quiz</div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                                                <span class="px-2 py-1 bg-blue-900 text-blue-200 rounded-full text-xs">Quiz</span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                                                March 28, 2025
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span class="px-2 py-1 bg-green-900 text-green-200 rounded-full text-xs">Completed</span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                                                92%
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="w-full bg-gray-700 rounded-full h-2">
+                                                    <div class="bg-green-500 h-2 rounded-full" style="width: 100%"></div>
+                                                </div>
+                                                <div class="text-xs text-gray-400 mt-1">24/24 Submitted</div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                <button class="text-blue-400 hover:text-blue-300 mr-3">Results</button>
+                                                <button class="text-gray-400 hover:text-gray-300">Details</button>
+                                            </td>
+                                        </tr>
+
+                                        <!-- Assignment 3 -->
+                                        <tr class="hover:bg-gray-700">
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="text-sm font-medium text-white">CNN Implementation</div>
+                                                <div class="text-xs text-gray-400">Lab Exercise</div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                                                <span class="px-2 py-1 bg-green-900 text-green-200 rounded-full text-xs">Lab</span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                                                March 22, 2025
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span class="px-2 py-1 bg-green-900 text-green-200 rounded-full text-xs">Graded</span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                                                85%
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="w-full bg-gray-700 rounded-full h-2">
+                                                    <div class="bg-green-500 h-2 rounded-full" style="width: 96%"></div>
+                                                </div>
+                                                <div class="text-xs text-gray-400 mt-1">23/24 Submitted</div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                <button class="text-blue-400 hover:text-blue-300 mr-3">Results</button>
+                                                <button class="text-gray-400 hover:text-gray-300">Details</button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                    </table>
+                                    </div>
+                                    </div>
+
+                                    <!-- AI Insights Tab (Hidden initially) -->
+                                    <div id="content-insights" class="hidden space-y-6">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div class="holographic-card p-4 rounded-xl">
+                                    <h3 class="font-bold text-lg mb-3">Learning Pace Analysis</h3>
+                                    <div class="text-sm text-gray-300 mb-4">
+                                        AI-generated insights based on assignment completion rates and scores.
+                                    </div>
+                                    <div class="prose text-gray-300 text-sm">
+                                        <p>The class is progressing at a <span class="text-green-400 font-semibold">steady pace</span> with most students on track to complete all learning objectives by the end of the term.</p>
+                                        <p>Key observations:</p>
+                                        <ul class="list-disc pl-5 space-y-1 mt-2">
+                                            <li>Data preprocessing concepts are well understood (92% mastery)</li>
+                                            <li>Neural network architecture concepts need reinforcement (76% mastery)</li>
+                                            <li>3 students are falling behind and may need intervention</li>
+                                            <li>Highly recommended to schedule an additional review session for Week 13</li>
+                                        </ul>
+                                    </div>
+                                    </div>
+
+                                    <div class="holographic-card p-4 rounded-xl">
+                                    <h3 class="font-bold text-lg mb-3">Content Engagement Heatmap</h3>
+                                    <div class="text-sm text-gray-300 mb-4">
+                                        Shows which course materials students interact with most.
+                                    </div>
+                                    <canvas id="engagementHeatmap" width="100%" height="200"></canvas>
+                                    </div>
+
+                                    <div class="holographic-card p-4 rounded-xl">
+                                    <h3 class="font-bold text-lg mb-3">AI-Suggested Interventions</h3>
+                                    <div class="text-sm text-gray-300 mb-4">
+                                        Personalized strategies for at-risk students.
+                                    </div>
+                                    <div class="space-y-4">
+                                        <div class="p-3 bg-gray-700 rounded-lg">
+                                            <div class="flex items-center">
+                                                <div class="h-8 w-8 rounded-full bg-red-500 flex items-center justify-center text-white font-bold mr-3">
+                                                    SJ
+                                                </div>
+                                                <div>
+                                                    <div class="font-semibold">Sarah Johnson</div>
+                                                    <div class="text-xs text-gray-400">ID: 2023-042</div>
+                                                </div>
+                                            </div>
+                                            <div class="mt-3 text-sm">
+                                                <p>Attendance issues and low engagement suggest possible external factors affecting performance.</p>
+                                                <div class="mt-2">
+                                                    <span class="text-blue-400 font-semibold">Recommendation:</span> Schedule 1:1 check-in; provide supplemental materials for missed content.
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!-- Add more interventions here -->
+                                    </div>
+                                    </div>
+
+                                    <div class="holographic-card p-4 rounded-xl">
+                                    <h3 class="font-bold text-lg mb-3">Concept Mastery Prediction</h3>
+                                    <div class="text-sm text-gray-300 mb-4">
+                                        AI-based predictions for concept mastery by the end of term.
+                                    </div>
+                                    <canvas id="masteryPrediction" width="100%" height="200"></canvas>
+                                    </div>
+                                    </div>
+                                    </div>
+
+                                    <!-- Calendar Tab (Hidden initially) -->
+                                    <div id="content-calendar" class="hidden space-y-6">
+                                    <!-- Calendar content here -->
+                                    <div class="text-center py-10">
+                                    <p class="text-gray-400">Calendar view is under development.</p>
+                                    </div>
+                                    </div>
+                                    </div>
+                                    </div>
+                                    </div>
+                                    </div>
+                                    </div>
+
+                                    <!-- AI Modal -->
+                                    <div id="ai-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+                                    <div class="bg-gray-800 rounded-xl max-w-xl w-full max-h-[80vh] overflow-auto p-6 m-4">
+                                    <div class="flex justify-between items-center mb-4">
+                                    <h2 class="text-xl font-bold text-white" id="ai-modal-title">AI Assistant</h2>
+                                    <button onclick="closeAIModal()" class="text-gray-400 hover:text-white">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                    </button>
+                                    </div>
+                                    <div id="ai-modal-content" class="space-y-4">
+                                    <!-- Content will be populated by JavaScript -->
+                                    </div>
+                                    </div>
+                                    </div>
+
+                                    <!-- JavaScript -->
+                                    <script>
+                                    // Chart initialization
+                                    document.addEventListener('DOMContentLoaded', function() {
+                                    // Assessment breakdown chart
+                                    const assessmentCtx = document.getElementById('assessmentChart').getContext('2d');
+                                    const assessmentChart = new Chart(assessmentCtx, {
+                                    type: 'doughnut',
+                                    data: {
+                                    labels: ['Quizzes', 'Projects', 'Labs', 'Exams', 'Participation'],
+                                    datasets: [{
+                                    data: [25, 30, 20, 15, 10],
+                                    backgroundColor: [
+                                    '#3B82F6', // blue
+                                    '#8B5CF6', // purple
+                                    '#10B981', // green
+                                    '#F59E0B', // yellow
+                                    '#EC4899'  // pink
+                                    ],
+                                    borderWidth: 0
+                                    }]
+                                    },
+                                    options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: {
+                                    legend: {
+                                    position: 'right',
+                                    labels: {
